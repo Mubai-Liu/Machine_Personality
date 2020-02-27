@@ -82,14 +82,14 @@ class OpenDotaAPI():
         return self._call(url, params)
 
     # Return wins and losses for a given account id
-    # def get_player_win_loss(self, account_id, hero_id = None):
-    #     if hero_id:
-    #         params = {'hero_id': hero_id}
-    #     else:
-    #         params = None
-    #     url = "https://api.opendota.com/api/players/{}/wl".format(account_id)
-    #     resp = self._call(url, params)
-    #     return resp['win'], resp['lose']
+    def get_player_win_loss(self, account_id, hero_id = None):
+        if hero_id:
+            params = {'hero_id': hero_id}
+        else:
+            params = None
+        url = "https://api.opendota.com/api/players/{}/wl".format(account_id)
+        resp = self._call(url, params)
+        return resp['win'], resp['lose']
 
 
 
@@ -110,7 +110,7 @@ class DataPreprocessing():
     def get_match(self, match):
         """ Get general information from the match and append to self.matches. """
         
-        fields = ['match_id', 'match_seq_num', 'patch', 'region', 'start_time', 'duration',
+        fields = ['match_id', 'match_seq_num', 'patch', 'start_time', 'duration',
             'game_mode', 'skill', 'first_blood_time', 'barracks_status_dire',
             'barracks_status_radiant', 'tower_status_dire', 'tower_status_radiant',
             'dire_score', 'radiant_score', 'radiant_win']
@@ -290,25 +290,25 @@ class DataPreprocessing():
         if players:
             self.players = self.players.append(pd.DataFrame(players), ignore_index= True)
 
-    # def get_previous_matches(self, current_match_id, player_account_id, player_previous_matches,
-    #                          current_match_start_time):
-    #     """ Append all previous matches before match_start_time from a given account id. """
+    def get_previous_matches(self, current_match_id, player_account_id, player_previous_matches,
+                             current_match_start_time):
+        """ Append all previous matches before match_start_time from a given account id. """
         
-    #     previous_matches = []
-    #     fields = ['match_id', 'player_slot', 'radiant_win', 'duration', 'game_mode',
-    #               'lobby_type', 'start_time', 'version', 'hero_id', 'kills', 'deaths',
-    #               'assists', 'skill', 'leaver_status', 'party_size']
+        previous_matches = []
+        fields = ['match_id', 'player_slot', 'radiant_win', 'duration', 'game_mode',
+                  'lobby_type', 'start_time', 'version', 'hero_id', 'kills', 'deaths',
+                  'assists', 'skill', 'leaver_status', 'party_size']
 
-    #     for item in player_previous_matches:
-    #         previous_match = {'current_match_id': current_match_id, 'account_id': player_account_id}
-    #         for field in fields:
-    #             previous_match[field] = item[field]
-    #         previous_matches.append(previous_match.copy())
+        for item in player_previous_matches:
+            previous_match = {'current_match_id': current_match_id, 'account_id': player_account_id}
+            for field in fields:
+                previous_match[field] = item[field]
+            previous_matches.append(previous_match.copy())
 
-    #     df = pd.DataFrame(previous_matches)
-    #     # Avoid future games
-    #     df = df[df['start_time'] < current_match_start_time]
-    #     self.previous_matches = self.previous_matches.append(df, ignore_index= True)
+        df = pd.DataFrame(previous_matches)
+        # Avoid future games
+        df = df[df['start_time'] < current_match_start_time]
+        self.previous_matches = self.previous_matches.append(df, ignore_index= True)
 
     def get_all_current_match_tables(self, match_details):
         """ Get all tables from a current match, except the previous matches. """
